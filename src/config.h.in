@@ -1,4 +1,4 @@
-/* src/config.h.in.  Generated from configure.in by autoheader.  */
+/* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -12,8 +12,8 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the <musepack/config_types.h> header file. */
-#undef HAVE_MUSEPACK_CONFIG_TYPES_H
+/* Define to 1 if you have the <mpcdec/config_types.h> header file. */
+#undef HAVE_MPCDEC_CONFIG_TYPES_H
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -35,6 +35,9 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Have TagLib */
+#undef HAVE_TAGLIB
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

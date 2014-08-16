@@ -1,10 +1,10 @@
 AC_INIT
 AC_CONFIG_SRCDIR([src/libmpc.cpp])
 AC_CONFIG_AUX_DIR(config)
-AM_INIT_AUTOMAKE(libmpc,"1.1")
+AM_INIT_AUTOMAKE(libmpc,1.2)
 AC_CONFIG_HEADER(src/config.h)
 
-VERSION="1.1"
+VERSION="1.2"
 
 AC_PROG_CXX
 AM_DISABLE_STATIC
@@ -37,9 +37,31 @@ PKG_CHECK_MODULES(GLIB_2_0, [glib-2.0 >= 2.0.0],
 	[AC_MSG_ERROR([GLib+2 >= 2.0.0 development package not installed])]
 )
 
-CXXFLAGS="$CXXFLAGS -O3 -fomit-frame-pointer $BEEP_CFLAGS"
+CXXFLAGS="$CXXFLAGS -O3 -fomit-frame-pointer"
+AC_CHECK_HEADERS(mpcdec/config_types.h,,AC_MSG_ERROR([*** Libmpcdec not installed - please install first ***]))
 
-AC_CHECK_HEADERS([musepack/config_types.h],,AC_MSG_ERROR([*** Libmusepack not installed - please install first ***]))
+AC_DEFUN([AC_HAVE_TAGLIB],
+[
+    AC_DEFINE(HAVE_TAGLIB, 1, [Have TagLib])
+    TAGLIB_CFLAGS=[`$TAGLIB_CONFIG --cflags`]
+    TAGLIB_LIBS=[`$TAGLIB_CONFIG --libs`]
+    HAVE_TAGLIB=true
+])
+AC_DEFUN([AC_NO_TAGLIB],
+[
+    AC_MSG_ERROR([*** Taglib not installed - please install first])
+])
+
+AC_PATH_PROG(TAGLIB_CONFIG, taglib-config, [no], [$PATH:$prefix/bin])
+if test "x$TAGLIB_CONFIG" = "xno" ; then
+    AC_NO_TAGLIB
+else
+    AC_HAVE_TAGLIB
+fi
+AC_SUBST(TAGLIB_CFLAGS)
+AC_SUBST(TAGLIB_LIBS)
+
+dnl ---------- END TAGLIB CHECK ----------
 
 dnl pthread libs
 
@@ -79,4 +101,4 @@ dnl
 AC_SUBST(VERSION)
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
-AC_MSG_RESULT([ Bmp-musepack $VERSION configured successfully.])
+AC_MSG_RESULT([=> Bmp-musepack $VERSION configured successfully.])

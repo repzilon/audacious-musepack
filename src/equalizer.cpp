@@ -1,4 +1,38 @@
 /*
+ * Copyright (c) 2005, The Musepack Development Team
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ * 
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ * 
+ *     * Neither the name of the The Musepack Development Team nor the
+ *       names of its contributors may be used to endorse or promote
+ *       products derived from this software without specific prior
+ *       written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
  *   Thanks to Felipe Rivera for letting us use some code from his
  *   EQU-Plugin (http://equ.sourceforge.net/) for our Equalizer.
  */
@@ -57,16 +91,19 @@ static float preamp;
 int round_trick(float floatvalue_to_round);
 
 
-static void output_set_eq(gboolean active, gfloat pre, gfloat * bands)
+static void
+output_set_eq(gboolean active, gfloat pre, gfloat * bands)
 {
     int i;
+
     preamp = 1.0 + 0.0932471 * pre + 0.00279033 * pre * pre;
     for (i = 0; i < 10; ++i)
         gain[i] = 0.03 * bands[i] + 0.000999999 * bands[i] * bands[i];
 }
 
 /* Init the filter */
-void init_iir(int on , float preamp_ctrl, float*  eq_ctrl)
+void
+init_iir(int on, float preamp_ctrl, float *eq_ctrl)
 {
     iir_cf = iir_cforiginal10;
 
@@ -74,13 +111,14 @@ void init_iir(int on , float preamp_ctrl, float*  eq_ctrl)
     memset(data_history, 0, sizeof(sXYData) * EQ_MAX_BANDS * EQ_CHANNELS);
     memset(data_history2, 0, sizeof(sXYData) * EQ_MAX_BANDS * EQ_CHANNELS);
 
-   output_set_eq(on ,preamp_ctrl, eq_ctrl);
+    output_set_eq(on, preamp_ctrl, eq_ctrl);
 }
 
 int
-iir(char * d, gint length)
+iir(char *d, gint length)
 {
     gint16 *data = (gint16 *) d;
+
     /* Indexes for the history arrays
      * These have to be kept between calls to this function
      * hence they are static */
@@ -108,7 +146,7 @@ iir(char * d, gint length)
         /* For each channel */
         for (channel = 0; channel < EQ_CHANNELS; channel++) {
             /* No need to scale when processing the PCM with the filter */
-	    pcm[channel] = data[index + channel];
+            pcm[channel] = data[index + channel];
             /* Preamp gain */
             pcm[channel] *= preamp;
 

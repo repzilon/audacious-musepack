@@ -1,3 +1,12 @@
+1.2
+	General code refactoring
+	Taglib dependency for ape/id3v1 tags
+	Not using vfs anymore
+	Lots of memleaks removed
+	Various bugs corrected
+	Safer multithreading
+	Updated for libmpcdec-1.2
+						
 1.1.2
 	port to new C libmusepack
 	

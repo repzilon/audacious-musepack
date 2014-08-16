@@ -1,8 +1,9 @@
 Bmp-musepack plugin
 Required:
-	GTK-2.4 headers and libs
-	Glib-2.0 headers and libs
-	Beep-media-player-0.9.7 headers and binaries
+	Taglib headers and libs >= 1.4
+	GTK-2.0 headers and libs
+	Bmp-0.9.7 headers and binaries
+	libmpcdec >= 1.2
 To install:
 run "./configure && make" as user
 run "make install" as root
