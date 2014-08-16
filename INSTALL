@@ -1,9 +1,12 @@
-Bmp-musepack plugin
+Audacious-musepack plugin
 Required:
 	Taglib headers and libs >= 1.4
 	GTK-2.0 headers and libs
-	Bmp-0.9.7 headers and binaries
-	libmpcdec >= 1.2
+	Audacious-2.1.0 headers and binaries
+	libmpcdec >= 1.3.0
 To install:
-run "./configure && make" as user
-run "make install" as root
+mkdir build
+cd build
+cmake ..
+make
+make install
