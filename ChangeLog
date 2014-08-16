@@ -1,0 +1,39 @@
+1.1.2
+	port to new C libmusepack
+	
+1.1
+	Autotools building process
+	%d now display full date tag
+
+1.1-alpha10 
+	Equalizer works now
+	Fixed a small Bug with skipping broken tracks
+
+1.1-alpha9 
+	Fixed Bug with Id3 Reading
+	Added Display of variable Bitrate
+
+1.1-alpha8:
+	Some Bugfixes (ID3-Genre out of range, Audio in use by other Program, displaytitle with empty tags)
+
+1.1-alpha7:
+	Added Reading of ID3-Tags and writing of APE2-Tags
+	Some changes in generate_title to make it work with FreeBSD
+
+1.1-alpha6:
+	close speed-up
+
+1.1-alpha5:
+	corrected and of track bug
+
+1.1-alpha4:
+	minor bugfixes
+
+1.1-alpha3:
+	another small glitch fixed in tag reading
+
+1.1-alpha2:
+	fixed tag reading
+
+1.1-alpha: 
+	rewrite from scratch using musepack lib
