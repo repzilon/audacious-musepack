@@ -211,7 +211,7 @@ static Tuple *mpcGetTuple(const gchar* p_Filename, VFSFile *input)
 
 	tuple_set_int(tuple, FIELD_LENGTH, NULL, (int)(1000 * mpc_streaminfo_get_length(&info)));
 
- 	gchar *scratch = g_strdup_printf("Musepack v%d (encoder %s)", info.stream_version, info.encoder);
+ 	gchar *scratch = g_strdup_printf("Musepack SV%d (encoder %s)", info.stream_version, info.encoder);
  	tuple_set_str(tuple, FIELD_CODEC, NULL, scratch);
  	g_free(scratch);
 
@@ -221,18 +221,31 @@ static Tuple *mpcGetTuple(const gchar* p_Filename, VFSFile *input)
 
 	tuple_set_int(tuple, FIELD_BITRATE, NULL, (int)(info.average_bitrate / 1000));
 
-	if (! vfs_is_streaming (input))
-	{
+	if (! vfs_is_streaming (input))	{
 		vfs_rewind (input);
 		tag_tuple_read (tuple, input);
 	}
 	
 	tuple_set_str(tuple, FIELD_MIMETYPE, NULL, "audio/x-musepack");
 
-	if (close_input)
+	if (close_input) {
 		vfs_fclose(input);
-
+	}
 	return tuple;
+}
+
+static gboolean mpcUpdateReplayGain(mpc_streaminfo* streamInfo, ReplayGainInfo* rg_info)
+{
+    if ((streamInfo == NULL) || (rg_info == NULL)) {
+        return FALSE;
+    }
+
+    rg_info->track_gain = streamInfo->gain_title / 100.0;
+    rg_info->album_gain = streamInfo->gain_album / 100.0;
+    rg_info->track_peak = streamInfo->peak_title / 65535.0;
+    rg_info->album_peak = streamInfo->peak_album / 65535.0;
+
+    return TRUE;
 }
 
 static void endThread(VFSFile * p_FileHandle, gboolean release)
@@ -301,7 +314,9 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
 	data->set_params(data, (int) (streamInfo.average_bitrate),
 					 streamInfo.sample_freq, streamInfo.channels);
 					 
-	mpc_set_replay_level(demux, MPC_OLD_GAIN_REF, 1, 1, 1);
+    ReplayGainInfo rg_info;
+    mpcUpdateReplayGain(&streamInfo, &rg_info);
+    data->output->set_replaygain_info(&rg_info);
 
     MPC_SAMPLE_FORMAT sampleBuffer[MPC_DECODER_BUFFER_LENGTH];
     char xmmsBuffer[MPC_DECODER_BUFFER_LENGTH * 4];
@@ -312,8 +327,7 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
         endThread(input, TRUE);
         return FALSE;
     }
-    
-    //vfs_fseek((VFSFile *) reader.data, 0, SEEK_SET);
+
     mpc_demux_seek_sample(demux, 0);
 
     lockRelease();
