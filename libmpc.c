@@ -33,7 +33,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#include <math.h>
 #include "libmpc.h"
 
 #define VERSION "1.3"
@@ -192,9 +192,7 @@ static Tuple *mpcGetTuple(const gchar* p_Filename, VFSFile *input)
 	if (input == 0) {
 		input = vfs_fopen(p_Filename, "rb");
 		if (input == 0) {
-			gchar* temp = g_strdup_printf("[aud_mpc] mpcGetTuple is unable to open %s\n", p_Filename);
-			perror(temp);
-			g_free(temp);
+			AUDDBG("unable to open %s\n", p_Filename);
 			return 0;
 		}
 		close_input = TRUE;
@@ -234,16 +232,24 @@ static Tuple *mpcGetTuple(const gchar* p_Filename, VFSFile *input)
 	return tuple;
 }
 
+static inline float computePeak(unsigned short raw)
+{
+	return pow(10, raw * (1/5120.0)) * (1/32768.0);
+}
+
 static gboolean mpcUpdateReplayGain(mpc_streaminfo* streamInfo, ReplayGainInfo* rg_info)
 {
     if ((streamInfo == NULL) || (rg_info == NULL)) {
         return FALSE;
     }
 
-    rg_info->track_gain = streamInfo->gain_title / 100.0;
-    rg_info->album_gain = streamInfo->gain_album / 100.0;
-    rg_info->track_peak = streamInfo->peak_title / 65535.0;
-    rg_info->album_peak = streamInfo->peak_album / 65535.0;
+	AUDDBG("Raw gain values: GT%i GA%i PT%i PA%i\n",
+	 streamInfo->gain_title, streamInfo->gain_album, streamInfo->peak_title, streamInfo->peak_album);
+
+    rg_info->track_gain = MPC_OLD_GAIN_REF - (streamInfo->gain_title * 1/256.0);
+    rg_info->album_gain = MPC_OLD_GAIN_REF - (streamInfo->gain_album * 1/256.0);
+    rg_info->track_peak = computePeak(streamInfo->peak_title);
+    rg_info->album_peak = computePeak(streamInfo->peak_album);
 
     return TRUE;
 }
@@ -313,7 +319,7 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
 	data->set_tuple(data, mpcGetTuple(filename, input));
 	data->set_params(data, (int) (streamInfo.average_bitrate),
 					 streamInfo.sample_freq, streamInfo.channels);
-					 
+
     ReplayGainInfo rg_info;
     mpcUpdateReplayGain(&streamInfo, &rg_info);
     data->output->set_replaygain_info(&rg_info);
@@ -343,7 +349,7 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
         lockAcquire();
 		if (mpcDecoder.offset != -1)
         {
-        	g_strdup_printf("[aud_mpc] decodeStream resetting to sample %lld (offset %lld)", mpcDecoder.offset * streamInfo.sample_freq / 1000, mpcDecoder.offset);
+			AUDDBG("resetting to sample %lld (offset %lld)", mpcDecoder.offset * streamInfo.sample_freq / 1000, mpcDecoder.offset);
 			mpc_demux_seek_sample(demux, mpcDecoder.offset * streamInfo.sample_freq / 1000);
 			data->output->flush(mpcDecoder.offset);
             mpcDecoder.offset = -1;
