@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2005-2009, The Musepack Development Team
+ * Copyright (c) 2014, Rene Rheaume <rene.rheaume@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +39,7 @@
 
 #define VERSION "1.3"
 #define PACKAGE "aud_mpc"
+#define AUD_MPC_DYNBITRATE
 
 static MpcDecoder		mpcDecoder = {0};
 static mpc_streaminfo	streamInfo = {0};
@@ -341,7 +343,7 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
 	data->set_pb_ready(data);
 
 #ifdef AUD_MPC_DYNBITRATE
-    gint counter = 2 * streamInfo.sample_freq / 3;
+    gint counter = streamInfo.sample_freq;
 #endif
 	int status = 0;
     while (mpcDecoder.isAlive)
@@ -364,7 +366,7 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
             if(counter < 0)
             {
 				data->set_params(data, mpcDecoder.dynbitrate, streamInfo.sample_freq, streamInfo.channels);
-                counter = 2 * streamInfo.sample_freq / 3;
+                counter = streamInfo.sample_freq;
             }
 #endif
         }
