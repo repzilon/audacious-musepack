@@ -244,9 +244,12 @@ static gboolean mpcUpdateReplayGain(mpc_streaminfo* streamInfo, ReplayGainInfo* 
     if ((streamInfo == NULL) || (rg_info == NULL)) {
         return FALSE;
     }
-
-	AUDDBG("Raw gain values: GT%i GA%i PT%i PA%i\n",
-	 streamInfo->gain_title, streamInfo->gain_album, streamInfo->peak_title, streamInfo->peak_album);
+    AUDDBG("Raw gain values: GT%i GA%i PT%i PA%i\n",
+     streamInfo->gain_title, streamInfo->gain_album, streamInfo->peak_title, streamInfo->peak_album);
+    // If all zeros, there is no replay gain info. Prevent extreme distortion
+    if (!streamInfo->gain_title && !streamInfo->gain_album && !streamInfo->peak_title && !streamInfo->peak_album) {
+        return FALSE;
+    }
 
     rg_info->track_gain = MPC_OLD_GAIN_REF - (streamInfo->gain_title * 1/256.0);
     rg_info->album_gain = MPC_OLD_GAIN_REF - (streamInfo->gain_album * 1/256.0);
@@ -322,10 +325,6 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
 	data->set_params(data, (int) (streamInfo.average_bitrate),
 					 streamInfo.sample_freq, streamInfo.channels);
 
-    ReplayGainInfo rg_info;
-    mpcUpdateReplayGain(&streamInfo, &rg_info);
-    data->output->set_replaygain_info(&rg_info);
-
     MPC_SAMPLE_FORMAT sampleBuffer[MPC_DECODER_BUFFER_LENGTH];
     char xmmsBuffer[MPC_DECODER_BUFFER_LENGTH * 4];
 
@@ -335,6 +334,11 @@ static gboolean decodeStream(InputPlayback *data, const char * filename)
         endThread(input, TRUE);
         return FALSE;
     }
+
+	// ReplayGain must be supplied after open_audio to prevent an assertion error
+    ReplayGainInfo rg_info;
+    mpcUpdateReplayGain(&streamInfo, &rg_info);
+    data->output->set_replaygain_info(&rg_info);
 
     mpc_demux_seek_sample(demux, 0);
 
